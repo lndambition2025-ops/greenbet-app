@@ -3,144 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GreenBet Pro - Championnats</title>
+    <title>GreenBet Pro - 5 Grands Championnats</title>
     <style>
-        :root { --primary: #27ae60; --bg: #f4f7f6; --text: #2c3e50; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 40px; }
-        header { background: var(--primary); color: white; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        :root { --primary: #27ae60; --bg: #f0f2f5; --text: #1a1a1a; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 50px; }
+        header { background: #fff; padding: 20px; text-align: center; border-bottom: 2px solid var(--primary); sticky; top:0; z-index:100; }
         
-        .filter-bar { background: white; padding: 10px; display: flex; justify-content: center; gap: 8px; sticky; top: 0; z-index: 10; border-bottom: 1px solid #ddd; overflow-x: auto; }
-        .filter-btn { border: 1px solid var(--primary); background: transparent; color: var(--primary); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; }
-        .filter-btn.active { background: var(--primary); color: white; }
-
         .container { padding: 15px; max-width: 800px; margin: auto; }
         
-        /* Style pour les titres de championnats */
-        .league-title { 
-            background: #e1e8e5; padding: 8px 15px; border-radius: 8px; 
-            margin: 25px 0 15px 0; font-weight: 800; font-size: 0.9rem; 
-            color: #27ae60; border-left: 4px solid var(--primary);
-            display: flex; justify-content: space-between;
+        .league-section { margin-top: 25px; }
+        .league-header { 
+            background: #2c3e50; color: white; padding: 10px 15px; 
+            border-radius: 8px; font-weight: bold; font-size: 0.85rem;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px;
         }
 
-        .match-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .teams { font-size: 1rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-        
-        .prediction-box { background: #f9fdfb; border-radius: 8px; padding: 12px; margin-top: 10px; border: 1px solid #edf2f0; }
-        .tip-row { display: flex; justify-content: space-between; align-items: center; }
-        .tip-label { font-size: 0.75rem; color: #7f8c8d; font-weight: bold; }
-        .tip-val { color: var(--primary); font-weight: 900; }
-        
-        .conf-bar-bg { background: #eee; height: 4px; border-radius: 2px; margin-top: 8px; overflow: hidden; }
-        .conf-bar-fill { background: var(--primary); height: 100%; transition: width 0.5s; }
+        .match-card { 
+            background: white; border-radius: 12px; padding: 18px; margin-bottom: 12px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid #eef0f2;
+        }
+        .teams { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 1rem; }
+        .vs { color: #bdc3c7; font-size: 0.7rem; }
+
+        .prediction-box { 
+            background: #fafffd; border: 1px solid #dcfce7; border-radius: 10px; 
+            padding: 12px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .tip-tag { background: var(--primary); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; }
+        .confiance { font-size: 0.8rem; font-weight: bold; color: #27ae60; }
+
+        .no-match { text-align: center; padding: 30px; color: #95a5a6; background: white; border-radius: 10px; }
+        .filter-nav { display: flex; gap: 10px; overflow-x: auto; padding: 10px 15px; background: white; border-bottom: 1px solid #ddd; }
+        .filter-pill { background: #eee; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; cursor: pointer; }
+        .filter-pill.active { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
 
     <header>
-        <div style="font-size: 1.3rem; font-weight: 900;">GREENBET PRO ⚽</div>
+        <div style="font-size: 1.4rem; font-weight: 900; color: var(--primary);">GREENBET ELITE ⚽</div>
+        <div style="font-size: 0.7rem; color: #7f8c8d; font-weight: bold; margin-top: 5px;">LIVE DATA : 5 GRANDS CHAMPIONNATS</div>
     </header>
 
-    <div class="filter-bar">
-        <button class="filter-btn active" onclick="updateMarket('WIN')">Victoire</button>
-        <button class="filter-btn" onclick="updateMarket('GOALS')">Buts +2.5</button>
-        <button class="filter-btn" onclick="updateMarket('BTTS')">Les 2 marquent</button>
+    <div class="filter-nav">
+        <div class="filter-pill active" onclick="setMarket('WIN')">💰 Résultat</div>
+        <div class="filter-pill" onclick="setMarket('GOALS')">⚽ Buts +2.5</div>
+        <div class="filter-pill" onclick="setMarket('BTTS')">🔥 Les 2 marquent</div>
     </div>
 
-    <div class="container" id="app-content">
-        <div style="text-align:center; padding:50px;">Chargement des championnats...</div>
+    <div class="container" id="main-content">
+        <div style="text-align:center; padding:50px;">Connexion aux serveurs sportifs...</div>
     </div>
 
     <script>
-        const API_KEY = '8997f37435f3484f885f00e57204481c'; // Clé de test
-        let currentMarket = 'WIN';
-        let allMatches = [];
+        const API_KEY = '8997f37435f3484f885f00e57204481c'; 
+        let market = 'WIN';
+        let store = {};
 
-        async function loadMatches() {
-            try {
-                const res = await fetch('https://api.football-data.org/v4/matches', {
-                    headers: { 'X-Auth-Token': API_KEY }
-                });
-                const data = await res.json();
-                // On prend tous les matchs prévus
-                allMatches = data.matches.filter(m => m.status === 'TIMED' || m.status === 'SCHEDULED');
-                renderList();
-            } catch (e) {
-                renderList(); // Mode démo si erreur
+        async function init() {
+            // Liste des codes officiels des 5 grands championnats
+            const leagues = ['FL1', 'PL', 'PD', 'SA', 'BL1'];
+            const content = document.getElementById('main-content');
+            content.innerHTML = '';
+            
+            for (const code of leagues) {
+                try {
+                    const res = await fetch(`https://api.football-data.org/v4/competitions/${code}/matches?status=SCHEDULED`, {
+                        headers: { 'X-Auth-Token': API_KEY }
+                    });
+                    const data = await res.json();
+                    if (data.matches && data.matches.length > 0) {
+                        store[data.competition.name] = data.matches;
+                    }
+                } catch (e) { console.error("Erreur ligue " + code); }
             }
+            render();
         }
 
-        function updateMarket(m) {
-            currentMarket = m;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        function setMarket(m) {
+            market = m;
+            document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
             event.target.classList.add('active');
-            renderList();
+            render();
         }
 
-        function renderList() {
-            const container = document.getElementById('app-content');
-            container.innerHTML = '';
+        function render() {
+            const content = document.getElementById('main-content');
+            if (Object.keys(store).length === 0) {
+                content.innerHTML = '<div class="no-match">Aucun match prévu aujourdhui dans les 5 grands championnats.</div>';
+                return;
+            }
 
-            // Groupement par championnat
-            const grouped = {};
-            const matchesToDisplay = allMatches.length > 0 ? allMatches : getDemoData();
-
-            matchesToDisplay.forEach(m => {
-                const league = m.competition ? m.competition.name : "Autres Championnats";
-                if (!grouped[league]) grouped[league] = [];
-                grouped[league].push(m);
-            });
-
-            // Affichage
-            for (const league in grouped) {
-                container.innerHTML += `<div class="league-title">${league.toUpperCase()} <span>${grouped[league].length} matchs</span></div>`;
+            content.innerHTML = '';
+            for (const league in store) {
+                let html = `<div class="league-section">
+                    <div class="league-header"><span>${league.toUpperCase()}</span> <span>${store[league].length} MATCHS</span></div>`;
                 
-                grouped[league].forEach(match => {
-                    const pred = calculatePred(match);
-                    container.innerHTML += `
+                store[league].forEach(m => {
+                    const p = getAlgo(m);
+                    html += `
                         <div class="match-card">
                             <div class="teams">
-                                <span>${match.homeTeam.shortName || match.homeTeam.name}</span>
-                                <span style="font-size:0.7rem; color:#ccc;">VS</span>
-                                <span>${match.awayTeam.shortName || match.awayTeam.name}</span>
+                                <span>${m.homeTeam.shortName || m.homeTeam.name}</span>
+                                <span class="vs">VS</span>
+                                <span>${m.awayTeam.shortName || m.awayTeam.name}</span>
                             </div>
                             <div class="prediction-box">
-                                <div class="tip-row">
-                                    <span class="tip-label">${pred.label}</span>
-                                    <span class="tip-val">${pred.tip}</span>
+                                <div style="display:flex; flex-direction:column">
+                                    <span style="font-size:0.6rem; color:#7f8c8d; font-weight:bold; margin-bottom:3px;">PRONOSTIC</span>
+                                    <span class="tip-tag">${p.tip}</span>
                                 </div>
-                                <div class="conf-bar-bg"><div class="conf-bar-fill" style="width:${pred.conf}%"></div></div>
-                                <div style="font-size:0.6rem; margin-top:4px; color:#999;">Confiance : ${pred.conf}%</div>
+                                <div class="confiance">${p.conf}% <span style="font-size:0.6rem; display:block; color:#999; text-align:right">CONFIANCE</span></div>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
+                html += `</div>`;
+                content.innerHTML += html;
             }
         }
 
-        function calculatePred(m) {
-            const id = m.id || Math.random();
-            if (currentMarket === 'WIN') {
-                return { label: "PRONO", tip: "Victoire " + m.homeTeam.name, conf: 62 + (id % 15) };
-            } else if (currentMarket === 'GOALS') {
-                return { label: "TOTAL BUTS", tip: (id % 10 > 4) ? "+2,5 Buts" : "-3,5 Buts", conf: 55 + (id % 20) };
+        function getAlgo(m) {
+            const seed = m.id;
+            if (market === 'WIN') {
+                return { tip: (seed % 3 === 0) ? "NUL ou 2" : "VICOIRE 1", conf: 68 + (seed % 15) };
+            } else if (market === 'GOALS') {
+                return { tip: (seed % 2 === 0) ? "+ 2,5 BUTS" : "- 3,5 BUTS", conf: 62 + (seed % 12) };
             } else {
-                return { label: "BTTS", tip: (id % 10 > 5) ? "OUI" : "NON", conf: 50 + (id % 25) };
+                return { tip: (seed % 5 > 2) ? "BTTS : OUI" : "BTTS : NON", conf: 55 + (seed % 20) };
             }
         }
 
-        function getDemoData() {
-            return [
-                { competition: {name: "Ligue 1"}, homeTeam: {name: "Lyon"}, awayTeam: {name: "Lille"} },
-                { competition: {name: "Ligue 1"}, homeTeam: {name: "PSG"}, awayTeam: {name: "Monaco"} },
-                { competition: {name: "Premier League"}, homeTeam: {name: "Liverpool"}, awayTeam: {name: "Newcastle"} },
-                { competition: {name: "Premier League"}, homeTeam: {name: "Arsenal"}, awayTeam: {name: "Chelsea"} },
-                { competition: {name: "Premier League"}, homeTeam: {name: "Man City"}, awayTeam: {name: "United"} },
-                { competition: {name: "La Liga"}, homeTeam: {name: "Real Madrid"}, awayTeam: {name: "Seville"} }
-            ];
-        }
-
-        window.onload = loadMatches;
+        window.onload = init;
     </script>
 </body>
 </html>
