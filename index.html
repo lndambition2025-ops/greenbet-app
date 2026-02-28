@@ -3,34 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GreenBet Auto-Intelligence</title>
+    <title>GreenBet Pro - Championnats</title>
     <style>
-        :root { --primary: #27ae60; --bg: #f8f9fa; --text: #2c3e50; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 30px; }
-        header { background: var(--primary); color: white; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        :root { --primary: #27ae60; --bg: #f4f7f6; --text: #2c3e50; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 40px; }
+        header { background: var(--primary); color: white; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         
-        .filter-bar { background: white; padding: 10px; display: flex; justify-content: center; gap: 10px; sticky; top: 0; z-index: 10; border-bottom: 1px solid #ddd; }
-        .filter-btn { border: 1px solid var(--primary); background: transparent; color: var(--primary); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; font-weight: bold; }
+        .filter-bar { background: white; padding: 10px; display: flex; justify-content: center; gap: 8px; sticky; top: 0; z-index: 10; border-bottom: 1px solid #ddd; overflow-x: auto; }
+        .filter-btn { border: 1px solid var(--primary); background: transparent; color: var(--primary); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; }
         .filter-btn.active { background: var(--primary); color: white; }
 
-        .container { padding: 15px; max-width: 600px; margin: auto; }
-        .match-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); }
-        .league { font-size: 0.7rem; font-weight: bold; color: #7f8c8d; text-transform: uppercase; }
-        .teams { font-size: 1.2rem; font-weight: bold; margin: 10px 0; display: flex; justify-content: space-between; }
+        .container { padding: 15px; max-width: 800px; margin: auto; }
         
-        .prediction-box { background: #f0fff4; border-radius: 10px; padding: 15px; margin-top: 15px; border: 1px solid #dcfce7; }
-        .market-label { font-size: 0.8rem; color: #27ae60; font-weight: bold; display: block; margin-bottom: 5px; }
-        .tip { font-size: 1.1rem; font-weight: 900; color: #1a5336; }
-        .stats { font-size: 0.8rem; color: #666; margin-top: 10px; display: flex; justify-content: space-between; }
+        /* Style pour les titres de championnats */
+        .league-title { 
+            background: #e1e8e5; padding: 8px 15px; border-radius: 8px; 
+            margin: 25px 0 15px 0; font-weight: 800; font-size: 0.9rem; 
+            color: #27ae60; border-left: 4px solid var(--primary);
+            display: flex; justify-content: space-between;
+        }
+
+        .match-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .teams { font-size: 1rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         
-        .loader { text-align: center; margin-top: 50px; font-weight: bold; color: var(--primary); }
+        .prediction-box { background: #f9fdfb; border-radius: 8px; padding: 12px; margin-top: 10px; border: 1px solid #edf2f0; }
+        .tip-row { display: flex; justify-content: space-between; align-items: center; }
+        .tip-label { font-size: 0.75rem; color: #7f8c8d; font-weight: bold; }
+        .tip-val { color: var(--primary); font-weight: 900; }
+        
+        .conf-bar-bg { background: #eee; height: 4px; border-radius: 2px; margin-top: 8px; overflow: hidden; }
+        .conf-bar-fill { background: var(--primary); height: 100%; transition: width 0.5s; }
     </style>
 </head>
 <body>
 
     <header>
-        <div style="font-size: 1.5rem; font-weight: 900;">GREENBET PRO</div>
-        <div id="date-now" style="font-size: 0.8rem; opacity: 0.9;">Chargement des données...</div>
+        <div style="font-size: 1.3rem; font-weight: 900;">GREENBET PRO ⚽</div>
     </header>
 
     <div class="filter-bar">
@@ -39,93 +47,100 @@
         <button class="filter-btn" onclick="updateMarket('BTTS')">Les 2 marquent</button>
     </div>
 
-    <div class="container" id="match-container">
-        <div class="loader">Analyse des flux serveurs en cours...</div>
+    <div class="container" id="app-content">
+        <div style="text-align:center; padding:50px;">Chargement des championnats...</div>
     </div>
 
     <script>
-        // CONFIGURATION
-        const API_KEY = 'TA_CLE_API_ICI'; // <-- METS TA CLÉ ICI
+        const API_KEY = '8997f37435f3484f885f00e57204481c'; // Clé de test
         let currentMarket = 'WIN';
-        let matchesData = [];
+        let allMatches = [];
 
-        async function fetchMatches() {
-            document.getElementById('date-now').innerText = new Date().toLocaleDateString('fr-FR', {weekday: 'long', day: 'numeric', month: 'long'});
-            
+        async function loadMatches() {
             try {
-                // On récupère les matchs des ligues majeures
-                const response = await fetch('https://api.football-data.org/v4/matches', {
+                const res = await fetch('https://api.football-data.org/v4/matches', {
                     headers: { 'X-Auth-Token': API_KEY }
                 });
-                const data = await response.json();
-                matchesData = data.matches.filter(m => m.status === 'TIMED' || m.status === 'SCHEDULED').slice(0, 15);
-                renderApp();
+                const data = await res.json();
+                // On prend tous les matchs prévus
+                allMatches = data.matches.filter(m => m.status === 'TIMED' || m.status === 'SCHEDULED');
+                renderList();
             } catch (e) {
-                // Si pas de clé API, on affiche des données de démo intelligentes
-                showDemoData();
+                renderList(); // Mode démo si erreur
             }
         }
 
-        function updateMarket(market) {
-            currentMarket = market;
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        function updateMarket(m) {
+            currentMarket = m;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
-            renderApp();
+            renderList();
         }
 
-        function getPrediction(match) {
-            // Algorithme GreenBet simplifié (Simule l'analyse de forme)
-            const hash = match.id || Math.random();
-            if (currentMarket === 'WIN') {
-                return { label: "RÉSULTAT FINAL", tip: match.homeTeam.name, conf: 65 + (hash % 20) };
-            } else if (currentMarket === 'GOALS') {
-                const isOver = (hash % 10) > 4;
-                return { label: "TOTAL BUTS", tip: isOver ? "+ de 2,5 Buts" : "- de 3,5 Buts", conf: 58 + (hash % 15) };
-            } else {
-                const btts = (hash % 10) > 3;
-                return { label: "LES DEUX MARQUENT", tip: btts ? "OUI" : "NON", conf: 52 + (hash % 25) };
-            }
-        }
-
-        function renderApp() {
-            const container = document.getElementById('match-container');
-            if (matchesData.length === 0) { showDemoData(); return; }
-            
+        function renderList() {
+            const container = document.getElementById('app-content');
             container.innerHTML = '';
-            matchesData.forEach(m => {
-                const pred = getPrediction(m);
-                container.innerHTML += `
-                    <div class="match-card">
-                        <div class="league">${m.competition.name}</div>
-                        <div class="teams">
-                            <span>${m.homeTeam.shortName || m.homeTeam.name}</span>
-                            <span style="color:#ddd">vs</span>
-                            <span>${m.awayTeam.shortName || m.awayTeam.name}</span>
-                        </div>
-                        <div class="prediction-box">
-                            <span class="market-label">${pred.label}</span>
-                            <span class="tip">${pred.tip}</span>
-                            <div class="stats">
-                                <span>Confiance: <strong>${pred.conf}%</strong></span>
-                                <span style="color:var(--primary)">Value Détectée</span>
+
+            // Groupement par championnat
+            const grouped = {};
+            const matchesToDisplay = allMatches.length > 0 ? allMatches : getDemoData();
+
+            matchesToDisplay.forEach(m => {
+                const league = m.competition ? m.competition.name : "Autres Championnats";
+                if (!grouped[league]) grouped[league] = [];
+                grouped[league].push(m);
+            });
+
+            // Affichage
+            for (const league in grouped) {
+                container.innerHTML += `<div class="league-title">${league.toUpperCase()} <span>${grouped[league].length} matchs</span></div>`;
+                
+                grouped[league].forEach(match => {
+                    const pred = calculatePred(match);
+                    container.innerHTML += `
+                        <div class="match-card">
+                            <div class="teams">
+                                <span>${match.homeTeam.shortName || match.homeTeam.name}</span>
+                                <span style="font-size:0.7rem; color:#ccc;">VS</span>
+                                <span>${match.awayTeam.shortName || match.awayTeam.name}</span>
+                            </div>
+                            <div class="prediction-box">
+                                <div class="tip-row">
+                                    <span class="tip-label">${pred.label}</span>
+                                    <span class="tip-val">${pred.tip}</span>
+                                </div>
+                                <div class="conf-bar-bg"><div class="conf-bar-fill" style="width:${pred.conf}%"></div></div>
+                                <div style="font-size:0.6rem; margin-top:4px; color:#999;">Confiance : ${pred.conf}%</div>
                             </div>
                         </div>
-                    </div>
-                `;
-            });
+                    `;
+                });
+            }
         }
 
-        function showDemoData() {
-            // Matchs de secours si l'API n'est pas encore connectée
-            matchesData = [
-                { id:1, competition: {name: "Ligue 1"}, homeTeam: {name: "Lyon"}, awayTeam: {name: "Lille"} },
-                { id:2, competition: {name: "Premier League"}, homeTeam: {name: "Liverpool"}, awayTeam: {name: "Newcastle"} },
-                { id:3, competition: {name: "La Liga"}, homeTeam: {name: "Real Madrid"}, awayTeam: {name: "Seville"} }
+        function calculatePred(m) {
+            const id = m.id || Math.random();
+            if (currentMarket === 'WIN') {
+                return { label: "PRONO", tip: "Victoire " + m.homeTeam.name, conf: 62 + (id % 15) };
+            } else if (currentMarket === 'GOALS') {
+                return { label: "TOTAL BUTS", tip: (id % 10 > 4) ? "+2,5 Buts" : "-3,5 Buts", conf: 55 + (id % 20) };
+            } else {
+                return { label: "BTTS", tip: (id % 10 > 5) ? "OUI" : "NON", conf: 50 + (id % 25) };
+            }
+        }
+
+        function getDemoData() {
+            return [
+                { competition: {name: "Ligue 1"}, homeTeam: {name: "Lyon"}, awayTeam: {name: "Lille"} },
+                { competition: {name: "Ligue 1"}, homeTeam: {name: "PSG"}, awayTeam: {name: "Monaco"} },
+                { competition: {name: "Premier League"}, homeTeam: {name: "Liverpool"}, awayTeam: {name: "Newcastle"} },
+                { competition: {name: "Premier League"}, homeTeam: {name: "Arsenal"}, awayTeam: {name: "Chelsea"} },
+                { competition: {name: "Premier League"}, homeTeam: {name: "Man City"}, awayTeam: {name: "United"} },
+                { competition: {name: "La Liga"}, homeTeam: {name: "Real Madrid"}, awayTeam: {name: "Seville"} }
             ];
-            renderApp();
         }
 
-        window.onload = fetchMatches;
+        window.onload = loadMatches;
     </script>
 </body>
 </html>
